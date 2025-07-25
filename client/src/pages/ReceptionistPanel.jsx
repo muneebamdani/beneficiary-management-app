@@ -1,79 +1,88 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import ProtectedRoute from "../components/ProtectedRoute"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card"
-import { Button } from "../components/ui/button"
-import { Input } from "../components/ui/input"
-import { Label } from "../components/ui/label"
-import { Textarea } from "../components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select"
-import { Alert, AlertDescription } from "../components/ui/alert"
-import { CheckCircle, UserPlus, Copy, Loader2 } from "lucide-react"
-import { useAuth } from "../contexts/AuthContext"
-import { BeneficiaryService } from "../services/beneficiaryService"
+import { useState } from "react";
+import ProtectedRoute from "../components/ProtectedRoute";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import { Textarea } from "../components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
+import { Alert, AlertDescription } from "../components/ui/alert";
+import { CheckCircle, UserPlus, Copy, Loader2 } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
+import { BeneficiaryService } from "../services/beneficiaryService";
 
 export default function ReceptionistPanel() {
-  const { user } = useAuth()
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     cnic: "",
     name: "",
     phone: "",
     address: "",
     purpose: "",
-  })
-  const [isSubmitted, setIsSubmitted] = useState(false)
-  const [tokenId, setTokenId] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [submitError, setSubmitError] = useState("")
+  });
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [tokenId, setTokenId] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const handleInputChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-  }
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setSubmitError("")
+    e.preventDefault();
+    setIsLoading(true);
+    setSubmitError("");
 
     try {
-      const department = BeneficiaryService.getDepartmentFromPurpose(formData.purpose)
-      const generatedTokenId = BeneficiaryService.generateTokenId()
+      // ✅ Let the backend generate tokenId and department
+      const response = await BeneficiaryService.createBeneficiary(formData);
 
-      const response = await BeneficiaryService.createBeneficiary({
-        ...formData,
-        department,
-        tokenId: generatedTokenId,
-      })
-
-      setTokenId(response.data.token.tokenId)
-      setIsSubmitted(true)
-
+      setTokenId(response.data.token.tokenId);
+      setIsSubmitted(true);
       setFormData({
         cnic: "",
         name: "",
         phone: "",
         address: "",
         purpose: "",
-      })
+      });
     } catch (error) {
-      console.error("Registration error:", error)
-      setSubmitError(error.message || "Failed to register beneficiary. Please try again.")
+      console.error("Registration error:", error);
+      setSubmitError(
+        error?.response?.data?.message ||
+        error.message ||
+        "Failed to register beneficiary. Please try again."
+      );
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const copyTokenId = () => {
-    navigator.clipboard.writeText(tokenId)
-    alert("Token ID copied to clipboard!")
-  }
+    navigator.clipboard.writeText(tokenId);
+    alert("Token ID copied to clipboard!");
+  };
 
   const resetForm = () => {
-    setIsSubmitted(false)
-    setTokenId("")
-    setSubmitError("")
-  }
+    setIsSubmitted(false);
+    setTokenId("");
+    setSubmitError("");
+  };
 
   if (isSubmitted) {
     return (
@@ -82,16 +91,20 @@ export default function ReceptionistPanel() {
           <Card className="text-center">
             <CardContent className="p-8">
               <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold mb-2">Registration Successful!</h2>
+              <h2 className="text-2xl font-bold mb-2">
+                Registration Successful!
+              </h2>
               <p className="mb-6">
-                Beneficiary has been registered successfully in MongoDB database. Please provide them with the token ID
-                below.
+                Beneficiary has been registered successfully. Provide them with
+                the token ID below.
               </p>
 
               <div className="bg-gray-50 p-6 rounded-lg mb-6">
                 <Label className="text-sm font-medium">Token ID</Label>
                 <div className="flex items-center justify-center space-x-2 mt-2">
-                  <span className="text-2xl font-bold text-green-600">{tokenId}</span>
+                  <span className="text-2xl font-bold text-green-600">
+                    {tokenId}
+                  </span>
                   <Button variant="outline" size="sm" onClick={copyTokenId}>
                     <Copy className="w-4 h-4" />
                   </Button>
@@ -100,29 +113,28 @@ export default function ReceptionistPanel() {
 
               <Alert className="mb-6">
                 <AlertDescription>
-                  <strong>MongoDB Integration:</strong> This beneficiary is now stored in the database and is visible to
-                  admin and department staff across the system.
+                  This beneficiary is now stored in the database and visible to
+                  Admin and Department Staff.
                 </AlertDescription>
               </Alert>
 
-              <Button onClick={resetForm} className="bg-green-600 hover:bg-green-700">
+              <Button
+                onClick={resetForm}
+                className="bg-green-600 hover:bg-green-700"
+              >
                 Register Another Beneficiary
               </Button>
             </CardContent>
           </Card>
         </div>
       </ProtectedRoute>
-    )
+    );
   }
 
   return (
     <ProtectedRoute allowedRoles={["receptionist"]}>
       <div className="max-w-2xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold">Beneficiary Registration</h1>
-          <p className="text-gray-600">Register new beneficiaries in MongoDB database for Saylani Welfare services</p>
-        </div>
-
+        <h1 className="text-3xl font-bold mb-4">Beneficiary Registration</h1>
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
@@ -130,7 +142,8 @@ export default function ReceptionistPanel() {
               New Beneficiary Registration
             </CardTitle>
             <CardDescription>
-              Fill in the beneficiary details to generate a token ID and store in database
+              Fill in the beneficiary details to generate a token ID and store
+              in database
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -148,7 +161,9 @@ export default function ReceptionistPanel() {
                     id="cnic"
                     placeholder="42101-1234567-1"
                     value={formData.cnic}
-                    onChange={(e) => handleInputChange("cnic", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("cnic", e.target.value)
+                    }
                     required
                   />
                 </div>
@@ -158,7 +173,9 @@ export default function ReceptionistPanel() {
                     id="name"
                     placeholder="Enter full name"
                     value={formData.name}
-                    onChange={(e) => handleInputChange("name", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("name", e.target.value)
+                    }
                     required
                   />
                 </div>
@@ -171,22 +188,39 @@ export default function ReceptionistPanel() {
                     id="phone"
                     placeholder="0300-1234567"
                     value={formData.phone}
-                    onChange={(e) => handleInputChange("phone", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("phone", e.target.value)
+                    }
                     required
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="purpose">Purpose *</Label>
-                  <Select value={formData.purpose} onValueChange={(value) => handleInputChange("purpose", value)}>
+                  <Select
+                    value={formData.purpose}
+                    onValueChange={(value) =>
+                      handleInputChange("purpose", value)
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select purpose" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Medical Assistance">Medical Assistance</SelectItem>
-                      <SelectItem value="Education Support">Education Support</SelectItem>
-                      <SelectItem value="Food Distribution">Food Distribution</SelectItem>
-                      <SelectItem value="Clothing Distribution">Clothing Distribution</SelectItem>
-                      <SelectItem value="Financial Aid">Financial Aid</SelectItem>
+                      <SelectItem value="Medical Assistance">
+                        Medical Assistance
+                      </SelectItem>
+                      <SelectItem value="Education Support">
+                        Education Support
+                      </SelectItem>
+                      <SelectItem value="Food Distribution">
+                        Food Distribution
+                      </SelectItem>
+                      <SelectItem value="Clothing Distribution">
+                        Clothing Distribution
+                      </SelectItem>
+                      <SelectItem value="Financial Aid">
+                        Financial Aid
+                      </SelectItem>
                       <SelectItem value="Other">Other</SelectItem>
                     </SelectContent>
                   </Select>
@@ -199,13 +233,19 @@ export default function ReceptionistPanel() {
                   id="address"
                   placeholder="Enter complete address"
                   value={formData.address}
-                  onChange={(e) => handleInputChange("address", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("address", e.target.value)
+                  }
                   rows={3}
                   required
                 />
               </div>
 
-              <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={isLoading}>
+              <Button
+                type="submit"
+                className="w-full bg-green-600 hover:bg-green-700"
+                disabled={isLoading}
+              >
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin mr-2" />
@@ -216,16 +256,9 @@ export default function ReceptionistPanel() {
                 )}
               </Button>
             </form>
-
-            <Alert className="mt-4">
-              <AlertDescription>
-                <strong>MongoDB Integration:</strong> All beneficiary data will be stored securely and is visible to
-                admins and staff.
-              </AlertDescription>
-            </Alert>
           </CardContent>
         </Card>
       </div>
     </ProtectedRoute>
-  )
+  );
 }

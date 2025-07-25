@@ -1,22 +1,23 @@
 // src/App.jsx
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
-import { AuthProvider, useAuth } from "./contexts/AuthContext"
-import ProtectedRoute from "./components/ProtectedRoute"
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { BeneficiaryProvider } from "./contexts/BeneficiaryContext"; // ✅ Import BeneficiaryProvider
+import ProtectedRoute from "./components/ProtectedRoute";
 
-import {Navbar} from "./components/Navbar"
-import LoginPage from "./pages/LoginPage"
-import AdminDashboard from "./pages/AdminDashboard"
-import ReceptionistPanel from "./pages/ReceptionistPanel"
-import DepartmentStaffPanel from "./pages/DepartmentStaffPanel"
-import SearchPage from "./pages/SearchPage"
-import UnauthorizedPage from "./pages/UnauthorizedPage"
+import { Navbar } from "./components/Navbar";
+import LoginPage from "./pages/LoginPage";
+import AdminDashboard from "./pages/AdminDashboard";
+import ReceptionistPanel from "./pages/ReceptionistPanel";
+import DepartmentStaffPanel from "./pages/DepartmentStaffPanel";
+import SearchPage from "./pages/SearchPage";
+import UnauthorizedPage from "./pages/UnauthorizedPage";
 
 function RequireUserAndRedirect() {
-  const { user, isLoading } = useAuth()
-  if (isLoading) return null
-  if (!user) return <Navigate to="/login" replace />
-  const rolePath = user.role.replace(/\s+/g, "-").toLowerCase()
-  return <Navigate to={`/${rolePath}`} replace />
+  const { user, isLoading } = useAuth();
+  if (isLoading) return null;
+  if (!user) return <Navigate to="/login" replace />;
+  const rolePath = user.role.replace(/\s+/g, "-").toLowerCase();
+  return <Navigate to={`/${rolePath}`} replace />;
 }
 
 function AppRoutes() {
@@ -60,16 +61,18 @@ function AppRoutes() {
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
       <Route path="*" element={<Navigate to="/unauthorized" replace />} />
     </Routes>
-  )
+  );
 }
 
 export default function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Navbar />
-        <AppRoutes />
-      </Router>
+      <BeneficiaryProvider> {/* ✅ Wrap your app inside BeneficiaryProvider */}
+        <Router>
+          <Navbar />
+          <AppRoutes />
+        </Router>
+      </BeneficiaryProvider>
     </AuthProvider>
-  )
+  );
 }

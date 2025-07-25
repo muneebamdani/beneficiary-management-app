@@ -1,13 +1,12 @@
 // middleware/roleMiddleware.js
-module.exports = function roleMiddleware(...allowedRoles) {
-  // Normalize all allowed roles to lowercase
-  const normalizedAllowedRoles = allowedRoles.map(role => role.toLowerCase());
-
+module.exports = (...allowedRoles) => {
   return (req, res, next) => {
-    const userRole = req.user?.role?.toLowerCase(); // Normalize user's role
+    const userRole = req.user?.role?.toLowerCase();
 
-    if (!normalizedAllowedRoles.includes(userRole)) {
-      return res.status(403).json({ message: "Access denied: insufficient role" });
+    const normalizedAllowedRoles = allowedRoles.map(role => role.toLowerCase());
+
+    if (!userRole || !normalizedAllowedRoles.includes(userRole)) {
+      return res.status(403).json({ success: false, message: 'Access denied: insufficient role' });
     }
 
     next();

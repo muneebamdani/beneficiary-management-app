@@ -5,8 +5,15 @@ exports.registerBeneficiary = async (req, res) => {
   try {
     const { name, cnic, phone, address, purpose } = req.body;
 
+    console.log("✅ Request body:", req.body);
+    console.log("✅ Authenticated user:", req.user);
+
     if (!name || !cnic || !phone || !address || !purpose) {
       return res.status(400).json({ success: false, message: "All fields are required" });
+    }
+
+    if (!req.user || !req.user.name || !req.user._id) {
+      return res.status(401).json({ success: false, message: "User information is missing in request" });
     }
 
     // Check for existing beneficiary with same CNIC
@@ -49,7 +56,7 @@ exports.registerBeneficiary = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error("Error registering beneficiary:", err);
+    console.error("❌ Error registering beneficiary:", err);
     res.status(500).json({ success: false, message: "Server error while registering beneficiary" });
   }
 };
@@ -62,7 +69,7 @@ exports.getAllBeneficiaries = async (req, res) => {
       data: beneficiaries,
     });
   } catch (error) {
-    console.error("Error fetching beneficiaries:", error);
+    console.error("❌ Error fetching beneficiaries:", error);
     res.status(500).json({ success: false, message: "Server error while fetching beneficiaries" });
   }
 };

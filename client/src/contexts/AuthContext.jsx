@@ -1,7 +1,7 @@
 "use client"
 
 import React, { createContext, useContext, useState, useEffect } from "react"
-import {jwtDecode} from "jwt-decode"
+import { jwtDecode } from "jwt-decode"
 
 const AuthContext = createContext()
 
@@ -21,7 +21,9 @@ export function AuthProvider({ children }) {
         if (decoded.exp && decoded.exp < now) {
           logout() // Token expired
         } else {
-          setUser(JSON.parse(userData))
+          const parsedUser = JSON.parse(userData)
+          const normalizedUser = { ...parsedUser, role: parsedUser.role.toLowerCase() }
+          setUser(normalizedUser)
         }
       } catch (err) {
         logout() // Invalid token
@@ -42,10 +44,13 @@ export function AuthProvider({ children }) {
       const json = await res.json()
 
       if (res.ok && json.success) {
+        const normalizedUser = { ...json.user, role: json.user.role.toLowerCase() }
+
         localStorage.setItem("jwt_token", json.token)
-        localStorage.setItem("user_data", JSON.stringify(json.user))
-        setUser(json.user)
-        return { success: true, user: json.user }
+        localStorage.setItem("user_data", JSON.stringify(normalizedUser))
+        setUser(normalizedUser)
+
+        return { success: true, user: normalizedUser }
       } else {
         return { success: false, message: json.message || "Login failed" }
       }
@@ -63,8 +68,9 @@ export function AuthProvider({ children }) {
   }
 
   function updateUser(updatedUser) {
-    setUser(updatedUser)
-    localStorage.setItem("user_data", JSON.stringify(updatedUser))
+    const normalizedUser = { ...updatedUser, role: updatedUser.role.toLowerCase() }
+    setUser(normalizedUser)
+    localStorage.setItem("user_data", JSON.stringify(normalizedUser))
   }
 
   const isAuthenticated = !!user

@@ -24,7 +24,7 @@ export default function AdminDashboard() {
       const res = await axios.get("http://localhost:5000/api/users", {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setUsers(res.data.users.filter(u => u.role !== "admin")); // Exclude admin
+      setUsers(res.data.users.filter(u => u.role !== "admin"));
     } catch (error) {
       console.error("Failed to fetch users", error);
     }
@@ -55,7 +55,10 @@ export default function AdminDashboard() {
     e.preventDefault();
     try {
       const token = localStorage.getItem("jwt_token");
-      await axios.put(`http://localhost:5000/api/users/${editUserId}`, formData, {
+      await axios.put(`http://localhost:5000/api/users/${editUserId}`, {
+        ...formData,
+        role: formData.role.toLowerCase()
+      }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setEditUserId(null);
@@ -69,7 +72,10 @@ export default function AdminDashboard() {
     e.preventDefault();
     try {
       const token = localStorage.getItem("jwt_token");
-      await axios.post("http://localhost:5000/api/users", newUserData, {
+      await axios.post("http://localhost:5000/api/users", {
+        ...newUserData,
+        role: newUserData.role.toLowerCase()
+      }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setShowAddForm(false);

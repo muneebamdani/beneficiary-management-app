@@ -8,6 +8,9 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
+  // Read backend URL from env, with a fallback
+  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000"
+
   useEffect(() => {
     const token = localStorage.getItem("jwt_token")
     const userData = localStorage.getItem("user_data")
@@ -31,7 +34,7 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
+      const res = await fetch(`${BACKEND_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -43,11 +46,14 @@ export function AuthProvider({ children }) {
         return { success: false, message: data.message || "Login failed" }
       }
 
-      localStorage.setItem("jwt_token", data.token)
-      localStorage.setItem("user_data", JSON.stringify(data.user))
-      setUser(data.user)
+      // Normalize role to lowercase for consistency
+      const safeUser = { ...data.user, role: data.user.role.toLowerCase() }
 
-      return { success: true, user: data.user }
+      localStorage.setItem("jwt_token", data.token)
+      localStorage.setItem("user_data", JSON.stringify(safeUser))
+      setUser(safeUser)
+
+      return { success: true, user: safeUser }
     } catch (error) {
       console.error("Login error:", error)
       return { success: false, message: "An unexpected error occurred" }

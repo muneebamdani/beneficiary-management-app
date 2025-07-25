@@ -1,18 +1,16 @@
-// routes/tokens.js
 const express = require('express');
 const { getTokenById, updateToken } = require('../controllers/tokenController');
 const { authenticateJWT } = require('../middleware/authMiddleware');
-const roleMiddleware = require('../middleware/roleMiddleware');  // Import WITHOUT destructuring
+const roleMiddleware = require('../middleware/roleMiddleware');
 
 const router = express.Router();
 
-// Protect all routes with authentication
-router.use(authenticateJWT);
+router.use(authenticateJWT); // Ensure user is authenticated
 
 // Anyone authenticated can get token by ID
 router.get('/:id', getTokenById);
 
-// Only 'department staff' or 'admin' roles can update tokens
+// Only 'department staff' or 'admin' can update tokens
 router.patch('/:id', roleMiddleware('department staff', 'admin'), updateToken);
 
 module.exports = router;

@@ -10,6 +10,27 @@ const { authenticateJWT } = require("../middleware/authMiddleware");
 const roleMiddleware = require("../middleware/roleMiddleware");
 const User = require("../models/User");
 
+// ✅ TEMP ROUTE: Fix capital "Admin" roles — placed BEFORE authentication
+router.get("/fix-admin-role", async (req, res) => {
+  try {
+    const result = await User.updateMany(
+      { role: "Admin" },
+      { $set: { role: "admin" } }
+    );
+    res.json({
+      success: true,
+      message: "Admin roles normalized",
+      modifiedCount: result.modifiedCount,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fixing admin roles",
+      error: error.message,
+    });
+  }
+});
+
 // Route to create the first Admin user (should be removed or protected after first use)
 router.post("/create-admin", async (req, res, next) => {
   try {
@@ -23,13 +44,13 @@ router.post("/create-admin", async (req, res, next) => {
   }
 }, createUser);
 
-// Protect all routes below with JWT
+// ✅ Apply authentication to all routes below
 router.use(authenticateJWT);
 
 // Admin-only user management routes
-router.get("/", roleMiddleware("Admin"), getAllUsers);
-router.post("/", roleMiddleware("Admin"), createUser);
-router.put("/:id", roleMiddleware("Admin"), updateUser);
-router.delete("/:id", roleMiddleware("Admin"), deleteUser);
+router.get("/", roleMiddleware("admin"), getAllUsers);
+router.post("/", roleMiddleware("admin"), createUser);
+router.put("/:id", roleMiddleware("admin"), updateUser);
+router.delete("/:id", roleMiddleware("admin"), deleteUser);
 
 module.exports = router;
