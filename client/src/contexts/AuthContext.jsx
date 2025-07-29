@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react"
 import { jwtDecode } from "jwt-decode"
+import API_URL from "../config"; // adjust path if needed
 
 const AuthContext = createContext()
 
@@ -35,7 +36,7 @@ export function AuthProvider({ children }) {
 
   async function login(email, password) {
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
+      const res = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),

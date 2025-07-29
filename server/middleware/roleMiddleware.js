@@ -1,12 +1,14 @@
-// middleware/roleMiddleware.js
-module.exports = (...allowedRoles) => {
+module.exports = function roleMiddleware(...requiredRoles) {
   return (req, res, next) => {
-    const userRole = req.user?.role?.toLowerCase();
+    if (!req.user || !req.user.role) {
+      return res.status(401).json({ message: 'Unauthorized: No user role found' });
+    }
 
-    const normalizedAllowedRoles = allowedRoles.map(role => role.toLowerCase());
+    const userRole = req.user.role.toLowerCase().trim();
+    const allowedRoles = requiredRoles.map(role => role.toLowerCase().trim());
 
-    if (!userRole || !normalizedAllowedRoles.includes(userRole)) {
-      return res.status(403).json({ success: false, message: 'Access denied: insufficient role' });
+    if (!allowedRoles.includes(userRole)) {
+      return res.status(403).json({ message: 'Forbidden: Insufficient role' });
     }
 
     next();

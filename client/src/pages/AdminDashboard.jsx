@@ -3,6 +3,7 @@ import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
+import API_URL from "../config"; // adjust path if needed
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -21,12 +22,16 @@ export default function AdminDashboard() {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem("jwt_token");
-      const res = await axios.get("http://localhost:5000/api/users", {
+      if (!token) {
+        console.error("No JWT token found, please login");
+        return;
+      }
+      const res = await axios.get(`${API_URL}/users`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUsers(res.data.users.filter(u => u.role !== "admin"));
     } catch (error) {
-      console.error("Failed to fetch users", error);
+      console.error("Failed to fetch users", error.response || error.message);
     }
   };
 
@@ -42,12 +47,12 @@ export default function AdminDashboard() {
   const handleDelete = async (id) => {
     try {
       const token = localStorage.getItem("jwt_token");
-      await axios.delete(`http://localhost:5000/api/users/${id}`, {
+      await axios.delete(`${API_URL}/users/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchUsers();
     } catch (error) {
-      console.error("Delete failed", error);
+      console.error("Delete failed", error.response || error.message);
     }
   };
 
@@ -55,7 +60,7 @@ export default function AdminDashboard() {
     e.preventDefault();
     try {
       const token = localStorage.getItem("jwt_token");
-      await axios.put(`http://localhost:5000/api/users/${editUserId}`, {
+      await axios.put(`${API_URL}/users/${editUserId}`, {
         ...formData,
         role: formData.role.toLowerCase()
       }, {
@@ -64,7 +69,7 @@ export default function AdminDashboard() {
       setEditUserId(null);
       fetchUsers();
     } catch (error) {
-      console.error("Update failed", error);
+      console.error("Update failed", error.response || error.message);
     }
   };
 
@@ -72,7 +77,7 @@ export default function AdminDashboard() {
     e.preventDefault();
     try {
       const token = localStorage.getItem("jwt_token");
-      await axios.post("http://localhost:5000/api/users", {
+      await axios.post(`${API_URL}/users`, {
         ...newUserData,
         role: newUserData.role.toLowerCase()
       }, {
@@ -82,7 +87,7 @@ export default function AdminDashboard() {
       setNewUserData({ name: "", email: "", password: "", role: "Receptionist", isActive: true });
       fetchUsers();
     } catch (error) {
-      console.error("User creation failed", error);
+      console.error("User creation failed", error.response || error.message);
     }
   };
 
@@ -100,24 +105,28 @@ export default function AdminDashboard() {
             placeholder="Name"
             value={newUserData.name}
             onChange={(e) => setNewUserData({ ...newUserData, name: e.target.value })}
+            required
           />
           <Input
             placeholder="Email"
+            type="email"
             value={newUserData.email}
             onChange={(e) => setNewUserData({ ...newUserData, email: e.target.value })}
+            required
           />
           <Input
             placeholder="Password"
             type="password"
             value={newUserData.password}
             onChange={(e) => setNewUserData({ ...newUserData, password: e.target.value })}
+            required
           />
           <select
             value={newUserData.role}
             onChange={(e) => setNewUserData({ ...newUserData, role: e.target.value })}
           >
-            <option>Receptionist</option>
-            <option>Department Staff</option>
+            <option value="receptionist">Receptionist</option>
+            <option value="department staff">Department Staff</option>
           </select>
           <select
             value={newUserData.isActive}
@@ -152,8 +161,8 @@ export default function AdminDashboard() {
                 </td>
                 <td className="p-2">
                   <select value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })}>
-                    <option>Receptionist</option>
-                    <option>Department Staff</option>
+                    <option value="receptionist">Receptionist</option>
+                    <option value="department staff">Department Staff</option>
                   </select>
                 </td>
                 <td className="p-2">

@@ -52,7 +52,8 @@ export default function ReceptionistPanel() {
       // ✅ Let the backend generate tokenId and department
       const response = await BeneficiaryService.createBeneficiary(formData);
 
-      setTokenId(response.data.token.tokenId);
+      // <-- FIX HERE: Access tokenId directly, not via response.data
+      setTokenId(response.token.tokenId);
       setIsSubmitted(true);
       setFormData({
         cnic: "",
@@ -65,8 +66,8 @@ export default function ReceptionistPanel() {
       console.error("Registration error:", error);
       setSubmitError(
         error?.response?.data?.message ||
-        error.message ||
-        "Failed to register beneficiary. Please try again."
+          error.message ||
+          "Failed to register beneficiary. Please try again."
       );
     } finally {
       setIsLoading(false);
@@ -161,9 +162,7 @@ export default function ReceptionistPanel() {
                     id="cnic"
                     placeholder="42101-1234567-1"
                     value={formData.cnic}
-                    onChange={(e) =>
-                      handleInputChange("cnic", e.target.value)
-                    }
+                    onChange={(e) => handleInputChange("cnic", e.target.value)}
                     required
                   />
                 </div>
@@ -173,9 +172,7 @@ export default function ReceptionistPanel() {
                     id="name"
                     placeholder="Enter full name"
                     value={formData.name}
-                    onChange={(e) =>
-                      handleInputChange("name", e.target.value)
-                    }
+                    onChange={(e) => handleInputChange("name", e.target.value)}
                     required
                   />
                 </div>
@@ -188,9 +185,7 @@ export default function ReceptionistPanel() {
                     id="phone"
                     placeholder="0300-1234567"
                     value={formData.phone}
-                    onChange={(e) =>
-                      handleInputChange("phone", e.target.value)
-                    }
+                    onChange={(e) => handleInputChange("phone", e.target.value)}
                     required
                   />
                 </div>
@@ -198,9 +193,7 @@ export default function ReceptionistPanel() {
                   <Label htmlFor="purpose">Purpose *</Label>
                   <Select
                     value={formData.purpose}
-                    onValueChange={(value) =>
-                      handleInputChange("purpose", value)
-                    }
+                    onValueChange={(value) => handleInputChange("purpose", value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select purpose" />
@@ -218,9 +211,7 @@ export default function ReceptionistPanel() {
                       <SelectItem value="Clothing Distribution">
                         Clothing Distribution
                       </SelectItem>
-                      <SelectItem value="Financial Aid">
-                        Financial Aid
-                      </SelectItem>
+                      <SelectItem value="Financial Aid">Financial Aid</SelectItem>
                       <SelectItem value="Other">Other</SelectItem>
                     </SelectContent>
                   </Select>
@@ -233,9 +224,7 @@ export default function ReceptionistPanel() {
                   id="address"
                   placeholder="Enter complete address"
                   value={formData.address}
-                  onChange={(e) =>
-                    handleInputChange("address", e.target.value)
-                  }
+                  onChange={(e) => handleInputChange("address", e.target.value)}
                   rows={3}
                   required
                 />

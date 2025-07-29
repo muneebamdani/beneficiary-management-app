@@ -1,81 +1,56 @@
-const User = require('../models/User');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
+const User = require("../models/User");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 
-// Register new user
-const register = async (req, res) => {
-  const { name, email, password, role = 'receptionist', isActive = true } = req.body;
+// helper to generate token
+const generateToken = (user) => jwt.sign(
+  {
+    userId: user._id,
+    role: user.role.toLowerCase(),
+  },
+  process.env.JWT_SECRET,
+  { expiresIn: "7d" }
+);
 
+exports.login = async (req, res) => {
+  const { email, password } = req.body;
   try {
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(409).json({ success: false, message: 'User already exists' });
+    const user = await User.findOne({ email });
+    if (!user) return res.status(401).json({ success: false, message: "Invalid credentials." });
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(401).json({ success: false, message: "Invalid credentials." });
+
+    const token = generateToken(user);
+    res.json({
+      success: true,
+      message: "Login successful",
+      token,
+      user: { id: user._id, name: user.name, email: user.email, role: user.role.toLowerCase() },
+    });
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json({ success: false, message: "Server error during login" });
+  }
+};
+
+exports.register = async (req, res) => {
+  try {
+    const { name, email, password, role } = req.body;
+    if (await User.findOne({ email })) {
+      return res.status(400).json({ success: false, message: "Email already exists" });
     }
-
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create user
-    const user = new User({
+    const hashed = await bcrypt.hash(password, 10);
+    const newUser = new User({
       name,
       email,
-      password: hashedPassword,
-      role: role.toLowerCase(),
-      isActive
+      password: hashed,
+      role: role?.toLowerCase() || "receptionist",
+      isActive: true,
     });
-
-    await user.save();
-
-    res.status(201).json({ success: true, message: 'User registered successfully', user });
+    await newUser.save();
+    res.status(201).json({ success: true, message: "User registered successfully" });
   } catch (err) {
-    console.error('Registration error:', err);
-    res.status(500).json({ success: false, message: 'Server error during registration' });
+    console.error("Register error:", err);
+    res.status(500).json({ success: false, message: "Server error", error: err.message });
   }
-};
-
-// Login user
-const login = async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    // Check if user exists
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(401).json({ success: false, message: 'Invalid email or password' });
-    }
-
-    // Check password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ success: false, message: 'Invalid email or password' });
-    }
-
-    // Generate JWT with lowercased role
-    const token = jwt.sign(
-      { id: user._id, role: user.role.toLowerCase() },
-      process.env.JWT_SECRET,
-      { expiresIn: '1d' }
-    );
-
-    res.status(200).json({
-      success: true,
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role.toLowerCase(),
-      }
-    });
-  } catch (err) {
-    console.error('Login error:', err);
-    res.status(500).json({ success: false, message: 'Server error during login' });
-  }
-};
-
-// Export both
-module.exports = {
-  register,
-  login
 };

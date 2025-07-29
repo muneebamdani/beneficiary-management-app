@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect } from "react"
-
+import NEXT_URL from "../src/config-two"
 const AuthContext = createContext(undefined)
 
 export function AuthProvider({ children }) {
@@ -9,7 +9,7 @@ export function AuthProvider({ children }) {
   const [isLoading, setIsLoading] = useState(true)
 
   // Read backend URL from env, with a fallback
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000"
+  const BACKEND_URL = `${NEXT_URL}`
 
   useEffect(() => {
     const token = localStorage.getItem("jwt_token")
