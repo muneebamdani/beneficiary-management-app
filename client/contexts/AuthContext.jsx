@@ -34,7 +34,7 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     try {
-      const res = await fetch(`${NEXT_URL}/api`, {
+      const res = await fetch(`${BACKEND_URL}/api`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
