@@ -1,10 +1,10 @@
-const API_BASE = "http://localhost:5000/api"
+import API_BASE_URL from '../config';
 
 const getToken = () => localStorage.getItem("jwt_token")
 
 export const UserService = {
   getAllUsers: async () => {
-    const res = await fetch(`${API_BASE}/users`, {
+    const res = await fetch(`${API_BASE_URL}/users`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -16,7 +16,7 @@ export const UserService = {
   },
 
   createUser: async (userData) => {
-    const res = await fetch(`${API_BASE}/users`, {
+    const res = await fetch(`${API_BASE_URL}/users`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -29,7 +29,7 @@ export const UserService = {
   },
 
   updateUser: async (userId, updatedData) => {
-    const res = await fetch(`${API_BASE}/users/${userId}`, {
+    const res = await fetch(`${API_BASE_URL}/users/${userId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -42,7 +42,7 @@ export const UserService = {
   },
 
   deleteUser: async (userId) => {
-    const res = await fetch(`${API_BASE}/users/${userId}`, {
+    const res = await fetch(`${API_BASE_URL}/users/${userId}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${getToken()}`,
@@ -53,7 +53,7 @@ export const UserService = {
   },
 
   toggleUserStatus: async (userId) => {
-    const res = await fetch(`${API_BASE}/users/${userId}`, {
+    const res = await fetch(`${API_BASE_URL}/users/${userId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -66,7 +66,7 @@ export const UserService = {
   },
 
   validateLogin: async (email, password) => {
-    const res = await fetch(`${API_BASE}/auth/login`, {
+    const res = await fetch(`${API_BASE_URL}/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
