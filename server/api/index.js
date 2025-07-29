@@ -7,16 +7,16 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 // Route imports
-const authRoutes = require('./routes/auth');
-const userRoutes = require('./routes/users');
-const beneficiaryRoutes = require('./routes/beneficiaries');
-const tokenRoutes = require('./routes/tokens');
-const dashboardRoutes = require('./routes/dashboard');
-const searchRoutes = require('./routes/search');
-const receptionistRoutes = require('./routes/receptionist'); // ✅ ADDED
+const authRoutes = require('../routes/auth');
+const userRoutes = require('../routes/users');
+const beneficiaryRoutes = require('../routes/beneficiaries');
+const tokenRoutes = require('../routes/tokens');
+const dashboardRoutes = require('../routes/dashboard');
+const searchRoutes = require('../routes/search');
+const receptionistRoutes = require('../routes/receptionist'); // ✅ ADDED
 
 // Middleware
-const errorHandler = require('./middleware/errorHandler');
+const errorHandler = require('../middleware/errorHandler');
 
 const app = express();
 
