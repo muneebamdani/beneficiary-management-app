@@ -1,3 +1,3 @@
-const NEXT_URL = process.env.NEXT_API_URL;
+const NEXT_URL =process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 
 export default NEXT_URL;
